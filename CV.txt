@@ -1,0 +1,594 @@
+# 1) cannyedgedetection
+'''
+import cv2
+
+def canny_edge_detection(image_path):
+    # Read the image
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+    # Apply Canny edge detection
+    canny_edge = cv2.Canny(image, 100, 200)  # Adjust threshold values as needed
+
+    return canny_edge
+
+# Example usage
+image_path = "street.jpg"
+canny_edges = canny_edge_detection(image_path)
+
+# Display the result
+cv2.imshow("Canny Edges", canny_edges)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
+
+# ---------------------------------------------------------------
+
+# 2) histogram equalization
+
+'''
+import cv2
+import matplotlib.pyplot as plt
+
+img = cv2.imread('street.jpg',cv2.IMREAD_GRAYSCALE)
+hist1 = cv2.calcHist([img],[0],None,[256],[0,256])
+img_2 = cv2.equalizeHist(img)
+hist2 = cv2.calcHist([img_2],[0],None,[256],[0,256])
+plt.subplot(221),plt.imshow(img);
+plt.subplot(222),plt.plot(hist1);
+plt.subplot(223),plt.imshow(img_2);
+plt.subplot(224),plt.plot(hist2);
+'''
+
+# ---------------------------------------------------------------
+
+# 3) histogram Matching
+
+'''
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+def histogram_matching(image, reference_histogram):
+    # Compute the histogram of the input image
+    image_histogram = cv2.calcHist([image], [0], None, [256], [0, 256])
+
+    # Compute the cumulative distribution function (CDF) of the input image histogram
+    image_cdf = image_histogram.cumsum() / image_histogram.sum()
+
+    # Compute the cumulative distribution function (CDF) of the reference histogram
+    reference_cdf = reference_histogram.cumsum() / reference_histogram.sum()
+
+    # Perform histogram matching
+    matched_image = np.interp(image.flatten(), np.arange(256), np.uint8(255 * reference_cdf)).reshape(image.shape)
+
+    # Convert the matched image to 8-bit unsigned integer
+    matched_image = np.uint8(matched_image)
+
+    # Compute the histogram of the matched image
+    matched_histogram = cv2.calcHist([matched_image], [0], None, [256], [0, 256])
+
+    return matched_image, matched_histogram
+
+# Example usage
+# Load the input image
+input_image = cv2.imread("street.jpg", cv2.IMREAD_GRAYSCALE)
+
+# Load the reference image (or compute its histogram)
+reference_image = cv2.imread("street.jpg", cv2.IMREAD_GRAYSCALE)
+reference_histogram = cv2.calcHist([reference_image], [0], None, [256], [0, 256])
+
+# Perform histogram matching
+matched_image, matched_histogram = histogram_matching(input_image, reference_histogram)
+
+# Display the result
+plt.figure(figsize=(10, 6))
+
+plt.subplot(2, 3, 1)
+plt.imshow(input_image, cmap='gray')
+plt.title('Original Image')
+plt.axis('off')
+
+plt.subplot(2, 3, 2)
+plt.imshow(reference_image, cmap='gray')
+plt.title('Reference Image')
+plt.axis('off')
+
+plt.subplot(2, 3, 3)
+plt.imshow(matched_image, cmap='gray')
+plt.title('Matched Image')
+plt.axis('off')
+
+plt.subplot(2, 3, 4)
+plt.plot(reference_histogram, color='blue')
+plt.title('Reference Histogram')
+plt.xlabel('Intensity')
+plt.ylabel('Frequency')
+
+plt.subplot(2, 3, 5)
+plt.plot(cv2.calcHist([input_image], [0], None, [256], [0, 256]), color='green')
+plt.title('Input Histogram')
+plt.xlabel('Intensity')
+plt.ylabel('Frequency')
+
+plt.subplot(2, 3, 6)
+plt.plot(matched_histogram, color='red')
+plt.title('Matched Histogram')
+plt.xlabel('Intensity')
+plt.ylabel('Frequency')
+
+plt.tight_layout()
+plt.show()
+'''
+
+#--------------------------------------------------------------
+
+#4) laplacian_filter_edge_detection
+
+'''
+import cv2
+
+def laplacian_edge_detection(image_path):
+    # Read the image
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+    # Apply Laplacian edge detection
+    laplacian_edge = cv2.Laplacian(image, cv2.CV_64F)
+   
+    # Apply thresholding to highlight edges
+    threshold_value = 30
+    _, laplacian_edge_thresholded = cv2.threshold(laplacian_edge, threshold_value, 255, cv2.THRESH_BINARY)
+
+    return laplacian_edge_thresholded
+
+# Example usage
+image_path = "street.jpg"
+laplacian_edges = laplacian_edge_detection(image_path)
+
+# Display the result
+cv2.imshow("Laplacian Edges", laplacian_edges)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
+
+#--------------------------------------------------------------
+
+#5) laplacian_of_gaussian_edge_detection
+
+'''
+import cv2
+
+def log_edge_detection(image_path):
+    # Read the image
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+    # Apply Gaussian blur
+    blurred_image = cv2.GaussianBlur(image, (3, 3), 0)
+
+    # Apply Laplacian of Gaussian (LoG)
+    log_edge = cv2.Laplacian(blurred_image, cv2.CV_64F)
+   
+    # Apply thresholding to highlight edges
+    threshold_value = 20
+    _, log_edge_thresholded = cv2.threshold(log_edge, threshold_value, 255, cv2.THRESH_BINARY)
+
+    return log_edge
+
+# Example usage
+image_path = "street.jpg"
+log_edges = log_edge_detection(image_path)
+
+# Display the result
+cv2.imshow("Laplacian of Gaussian Edges", log_edges)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
+#-----------------------------------------------------------
+
+#6) log transformation
+
+'''
+import cv2
+import numpy as np
+
+def log_transformation(image):
+    # Normalizing the pixel values
+    normalized_image = cv2.normalize(image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+    # Applying log transformation
+    transformed_image = np.log1p(normalized_image)
+    # Denormalizing the pixel values
+    transformed_image = cv2.normalize(transformed_image, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    return transformed_image
+
+# Example usage
+image = cv2.imread("street.jpg", cv2.IMREAD_GRAYSCALE)
+log_transformed_image = log_transformation(image)
+cv2.imshow("Log Transformed Image", log_transformed_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
+
+#-----------------------------------------------------------
+
+#7) maxfilter
+
+'''
+import cv2
+import numpy as np
+
+def max_filter(image, kernel_size):
+    kernel = np.ones((kernel_size, kernel_size), np.uint8)
+    return cv2.dilate(image, kernel)
+
+# Example usage
+image = cv2.imread("street.jpg")
+kernel_size = 5  # Adjust kernel size as needed
+max_filtered_image = max_filter(image, kernel_size)
+cv2.imshow("Max Filtered Image", max_filtered_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
+
+#----------------------------------------------------------
+
+#8) minfilter
+
+'''
+import cv2
+import numpy as np
+
+def min_filter(image, kernel_size):
+    kernel = np.ones((kernel_size, kernel_size), np.uint8)
+    return cv2.erode(image, kernel)
+
+# Example usage
+image = cv2.imread("street.jpg")
+kernel_size = 5  # Adjust kernel size as needed
+min_filtered_image = min_filter(image, kernel_size)
+cv2.imshow("Min Filtered Image", min_filtered_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
+
+#----------------------------------------------------------
+
+#9) meanfilter
+
+'''
+
+import cv2
+
+def mean_filter(image, kernel_size):
+    return cv2.blur(image, (kernel_size, kernel_size))
+
+# Example usage
+image = cv2.imread("street.jpg")
+kernel_size = 5  # Adjust kernel size as needed
+mean_filtered_image = mean_filter(image, kernel_size)
+cv2.imshow("Mean Filtered Image", mean_filtered_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
+
+#----------------------------------------------------------
+
+#10) medianfilter
+
+'''
+import cv2
+
+def median_filter(image, kernel_size):
+    return cv2.medianBlur(image, kernel_size)
+
+# Example usage
+image = cv2.imread("street.jpg")
+kernel_size = 5  # Adjust kernel size as needed
+median_filtered_image = median_filter(image, kernel_size)
+cv2.imshow("Median Filtered Image", median_filtered_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
+#-------------------------------------------------------------
+
+#11) pil_img
+'''
+from PIL import Image
+from PIL import ImageFilter
+from PIL import ImageChops
+
+#opening a image
+im=Image.open('street.jpg')
+
+#to find the size,mode and foramt
+print(im.format,im.size,im.mode)
+
+#to display the image
+#im.show()
+
+#to resize the image
+out=im.resize((128,128))
+print("After resizing:")
+print(im.size)
+#out.show()
+
+#to rotate
+out = out.rotate(23)
+
+#to transpose
+
+out=out.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+
+#to convert to black and white
+
+out=out.convert("L")
+
+#merging and splitting
+
+#r, g, b = im.split()
+#im = Image.merge("RGB", (b, g, r))
+
+#to crop
+
+box = (100, 100, 400, 400)
+region = im.crop(box)
+
+#applying filter
+out = im.filter(ImageFilter.BLUR)
+
+#point operations
+out = im.point(lambda i: i * 2)
+
+#adding images
+
+def merge(im1, im2):
+    w = im1.size[0] + im2.size[0]
+    h = min(im1.size[1], im2.size[1])
+    im = Image.new("RGBA", (w, h))
+    im.paste(im1)
+    im.paste(im2, (im1.size[0], 0))
+    return im
+
+im1=Image.open("street.jpg")
+im2=Image.open("street.jpg")
+out=merge(im1,im2)
+
+#region.show()
+#im.show()
+out.show()
+
+img=Image.open("street.jpg")
+#print(img.format, img.size, img.mode)
+img2=Image.open("street.jpg")
+
+im2=merge(img,img2)
+#im2.show()
+
+im4=ImageChops.add(img2, img, 1.0, 0)
+#im4.show()
+
+im3=ImageChops.subtract(img2, img, 1.0, 0)
+#im3.show()
+
+r,g,b=img.split()
+im=Image.merge("RGB",(b,g,r))
+#im.show()
+
+filter=img.filter(ImageFilter.GaussianBlur(5.0))
+#filter.show()
+
+out = img.point(lambda i: i * 5)
+#out.show()
+
+source = im.split()
+R, G, B = 0, 1, 2
+mask = source[R].point(lambda i: i < 100 and 255)
+out = source[G].point(lambda i: i * 1)
+source[G].paste(out, None, mask)
+im = Image.merge(im.mode, source)
+
+#im.show()
+
+im2=img.histogram()
+print(im2)
+'''
+
+#---------------------------------------------------------
+
+#12) powerlawtransformation
+
+'''
+import cv2
+import numpy as np
+
+def power_law_transformation(image, gamma):
+    # Normalizing the pixel values
+    normalized_image = cv2.normalize(image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+    # Applying power law transformation
+    transformed_image = np.power(normalized_image, gamma)
+    # Denormalizing the pixel values
+    transformed_image = cv2.normalize(transformed_image, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    return transformed_image
+
+# Example usage
+image = cv2.imread("street.jpg", cv2.IMREAD_GRAYSCALE)
+gamma = 0.5  # Adjust gamma value as needed
+power_law_transformed_image = power_law_transformation(image, gamma)
+cv2.imshow("Power Law Transformed Image", power_law_transformed_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
+
+#-------------------------------------------------------------
+
+#13) prewittedgedetection
+
+'''
+import cv2
+
+def prewitt_edge_detection(image_path):
+    # Read the image
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+    # Apply Prewitt edge detection
+    kernel_x = cv2.getDerivKernels(1, 0, 3, normalize=True)
+    kernel_y = cv2.getDerivKernels(0, 1, 3, normalize=True)
+    prewitt_x = cv2.filter2D(image, cv2.CV_64F, kernel_x[0] * kernel_x[1].T)
+    prewitt_y = cv2.filter2D(image, cv2.CV_64F, kernel_y[0] * kernel_y[1].T)
+    prewitt_edge = cv2.magnitude(prewitt_x, prewitt_y)
+   
+    # Apply threshold to highlight edges
+    threshold_value = 20
+    _, prewitt_edge_thresholded = cv2.threshold(prewitt_edge, threshold_value, 255, cv2.THRESH_BINARY)
+
+    return prewitt_edge_thresholded
+
+# Example usage
+image_path = "street.jpg"
+prewitt_edges = prewitt_edge_detection(image_path)
+
+# Display the result
+cv2.imshow("Prewitt Edges", prewitt_edges)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
+
+#---------------------------------------------------------
+
+#14) sampling
+
+'''
+#image sampling
+# Import cv2, matplotlib, numpy
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+# Read the original image and know its type
+img1 = cv2.imread('street.jpg', 0)
+
+# Obtain the size of the original image
+[m, n] = img1.shape
+print('Image Shape:', m, n)
+
+# Show original image
+print('Original Image:')
+plt.imshow(img1, cmap="gray")
+
+
+# Down sampling
+
+# Assign a down sampling rate
+# Here we are down sampling the
+# image by 4
+f = 2
+
+# Create a matrix of all zeros for
+# downsampled values
+img2 = np.zeros((m//f, n//f), dtype=np.int)
+
+# Assign the down sampled values from the original
+# image according to the down sampling frequency.
+# For example, if the down sampling rate f=2, take
+# pixel values from alternate rows and columns
+# and assign them in the matrix created above
+for i in range(0, m, f):
+for j in range(0, n, f):
+try:
+
+img2[i//f][j//f] = img1[i][j]
+except IndexError:
+pass
+
+
+# Show down sampled image
+print('Down Sampled Image:')
+plt.imshow(img2, cmap="gray")
+
+
+# Up sampling
+
+# Create matrix of zeros to store the upsampled image
+img3 = np.zeros((m, n), dtype=np.int)
+# new size
+for i in range(0, m-1, f):
+for j in range(0, n-1, f):
+img3[i, j] = img2[i//f][j//f]
+
+# Nearest neighbour interpolation-Replication
+# Replicating rows
+
+for i in range(1, m-(f-1), f):
+for j in range(0, n-(f-1)):
+img3[i:i+(f-1), j] = img3[i-1, j]
+
+# Replicating columns
+for i in range(0, m-1):
+for j in range(1, n-1, f):
+img3[i, j:j+(f-1)] = img3[i, j-1]
+
+# Plot the up sampled image
+print('Up Sampled Image:')
+plt.imshow(img3, cmap="gray")
+'''
+
+#-------------------------------------------------------------
+
+#15) sharpen image
+'''
+import cv2
+import numpy as np
+
+def sharpen_image(image):
+    # Convert image to grayscale
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Apply Laplacian operator
+    laplacian = cv2.Laplacian(gray_image, cv2.CV_64F)
+
+    # Convert Laplacian to 3-channel image
+    laplacian_3channels = cv2.merge([laplacian, laplacian, laplacian])
+
+    # Adding Laplacian to original image to sharpen it
+    sharpened_image = np.uint8(np.clip(image + laplacian_3channels, 0, 255))
+
+    return sharpened_image
+
+# Example usage
+image = cv2.imread("street.jpg")
+sharpened_image = sharpen_image(image)
+cv2.imshow("Sharpened Image", sharpened_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
+
+#----------------------------------------------------------------
+
+#16) sobeledgedetection
+
+'''
+import cv2
+
+def sobel_edge_detection(image_path):
+    # Read the image
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+    # Apply Sobel edge detection
+    sobel_x = cv2.Sobel(image, cv2.CV_64F, 1, 0, ksize=3)
+    sobel_y = cv2.Sobel(image, cv2.CV_64F, 0, 1, ksize=3)
+    sobel_edge = cv2.magnitude(sobel_x, sobel_y)
+
+    # Apply threshold to highlight edges
+    threshold_value = 50
+    _, sobel_edge_thresholded = cv2.threshold(sobel_edge, threshold_value, 255, cv2.THRESH_BINARY)
+
+    return sobel_edge_thresholded
+
+# Example usage
+image_path = "street.jpg"
+sobel_edges = sobel_edge_detection(image_path)
+
+# Display the result
+cv2.imshow("Sobel Edges", sobel_edges)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
